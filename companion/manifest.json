@@ -1,0 +1,26 @@
+{
+	"id": "posistagenet",
+	"name": "PosiStageNet",
+	"shortname": "PSN",
+	"description": "Interface to the ETC EOS lighting system",
+	"version": "0.0.0",
+	"license": "MIT",
+	"repository": "git+https://github.com/bitfocus/companion-module-etc-eos.git",
+	"bugs": "https://github.com/bitfocus/companion-module-etc-eos/issues",
+	"maintainers": [
+		{
+			"name": "",
+			"email": ""
+		}
+	],
+	"runtime": {
+		"type": "node18",
+		"api": "nodejs-ipc",
+		"apiVersion": "0.0.0",
+		"entrypoint": "../main.js"
+	},
+	"legacyIds": [],
+	"manufacturer": "Generic",
+	"products": ["PosiStageNet"],
+	"keywords": ["Live 3D Position Data"]
+}
