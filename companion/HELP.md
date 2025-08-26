@@ -20,6 +20,8 @@ as often as positioning information. The default rate of 1Hz is used for **PSN_I
 The PosiStageNet protocol is transmitted as **UDP multicast** at address **236.10.10.10** over the
 port **56565**. These are the defaults parameters and can be modified on the tracking server. 
 
+## Module-Settings
+
 ## Variables
 
 - PSN_INFO_SYSTEM_NAME

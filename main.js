@@ -17,22 +17,21 @@ class ModuleInstance extends InstanceBase {
 	}
 
 	async init(config) {
-		this.config = config
 
-		this.updateStatus(InstanceStatus.Disconnected)
+		this.config = config;
 
-		this.instanceState = {}
-		this.debugToLogger = true
+		this.updateStatus(InstanceStatus.Disconnected);
 
-
-		this.psn_host = this.config.psn_host
-		this.psn_port = this.config.psn_port
-		this.readingWheels = false
-
-		// how many groups to get labels for
-		this.howManyTrackers = constants.NUM_TRACKERS
+		this.instanceState = {};
+		this.debugToLogger = true;
 
 
+		this.psnHost = this.config.psn_host;
+		this.psnPort = this.config.psn_port;
+		this.refreshRate = this.config.refresh_rate;
+		this.decimals = this.config.decimals;
+
+		this.howManyTrackers = 0;
 
 		this.updateActions() // export actions
 		this.updateFeedbacks() // export feedbacks
@@ -44,80 +43,38 @@ class ModuleInstance extends InstanceBase {
 		this.decoder = new Decoder()
 
 		this.client.on('listening', () => {
-			this.client.addMembership(this.psn_host);
+			this.client.addMembership(this.psnHost);
 		});
 		this.client.on('message', (buffer) => {
 			this.decoder.decode(buffer);
+			//this.setPSNVariables();
 		});
-		this.client.bind(this.psn_port, '0.0.0.0');
+		this.client.bind(this.psnPort, '0.0.0.0');
+
+		this.updateStatus(InstanceStatus.Ok)
 
 		setInterval(() => {
-			if (this.decoder.system_name) {
-				console.log(`System Name: ${this.decoder.system_name}`);
-			}
-			if (Object.keys(this.decoder.trackers).length > 0) {
-				console.log(`Tracker Count: ${Object.keys(this.decoder.trackers).length}`);
-			}
+			this.setPSNVariables();
+		}, (1000/this.refreshRate));
 
-			Object.entries(this.decoder.trackers).forEach(([trackerId, tracker]) => {
-				const trackerName = decoder.trackers[trackerId]?.name;
-				console.log(`Tracker - id: ${trackerId} | name: ${trackerName || ''}`);
-				if (tracker.pos) {
-					console.log(`\tpos: ${tracker.pos.x}, ${tracker.pos.x}, ${tracker.pos.x}`);
-				}
-
-				if (tracker.speed) {
-					console.log(`\tspeed: ${tracker.speed.x}, ${tracker.speed.y}, ${tracker.speed.z}`);
-				}
-
-				if (tracker.ori) {
-					console.log(`\tori: ${tracker.ori.x}, ${tracker.ori.y}, ${tracker.ori.z}`);
-				}
-
-				if (tracker.status) {
-					console.log(`\tstatus: ${tracker.status.validity}`);
-				}
-
-				if (tracker.accel) {
-					console.log(`\taccel: ${tracker.accel.x}, ${tracker.accel.y}, ${tracker.accel.z}`);
-				}
-
-				if (tracker.trgtpos) {
-					console.log(`\ttrgtpos: ${tracker.trgtpos.x}, ${tracker.trgtpos.y}, ${tracker.trgtpos.z}`);
-				}
-
-				if (tracker.timestamp) {
-					console.log(`\ttimestamp: ${tracker.timestamp}`);
-				}
-			});
-		}, 1000);
-
-		this.startReconnectTimer()
 	}
 
 
 	// When module gets deleted
 	async destroy() {
-		// Clear the reconnect timer if it exists.
-		if (this.reconnectTimer !== undefined) {
-			clearInterval(this.reconnectTimer)
-			delete this.reconnectTimer
-		}
-
-		// Close the socket.
 		this.log('debug', 'destroy')
 	}
 
 	async configUpdated(config) {
-		let currentHost = this.config.host
-		let currentUserId = this.config.user_id
-		let currentUseSlip = this.config.use_slip
+		let currentPsnHost = this.config.psn_host;
+		let currentPsnPort = this.config.psn_port;
+		let currentRefreshRate = this.config.refresh_rate;
+		let currentDecimals = this.config.decimals;
 
 		this.config = config
 
-		if (currentHost !== this.config.host || currentUserId !== this.config.user_id
-			|| currentUseSlip !== this.config.use_slip) {
-			this.eos_port = this.config.use_slip ? constants.EOS_PORT_SLIP : constants.EOS_PORT
+		if (currentPsnHost !==this.config.psn_host || currentPsnPort !== this.config.psn_port
+			|| currentRefreshRate !== his.config.refresh_rate || currentDecimals !== this.config.decimals) {
 			await this.init(config)
 		}
 	}
@@ -144,7 +101,7 @@ class ModuleInstance extends InstanceBase {
 	}
 
 	/**
-	 * Sets the connection state of this module to the Eos console.
+	 * Sets the connection state of this module
 	 *
 	 * @param isConnected
 	 */
@@ -160,31 +117,6 @@ class ModuleInstance extends InstanceBase {
 		}
 	}
 
-
-	/**
-	 * Watches for disconnects and reconnects to the console.
-	 */
-	startReconnectTimer() {
-		if (this.reconnectTimer !== undefined) {
-			// Timer is already running.
-			return
-		}
-
-		this.reconnectTimer = setInterval(() => {
-			if (!this.oscSocket || !this.oscSocket.socket) {
-				// Socket not valid
-				return
-			}
-
-			if (this.oscSocket.socket.readyState === 'open') {
-				// Already connected. Nothing to do.
-				return
-			}
-
-			// Re-open the TCP socket
-			this.oscSocket.socket.connect(this.eos_port, this.config.host)
-		}, 5000)
-	}
 
 	/**
 	 * Updates the internal state of a variable within this module.
@@ -222,6 +154,88 @@ class ModuleInstance extends InstanceBase {
 		}
 
 		//this.checkFeedbacks('macroisfired','pending_cue', 'active_cue', 'connected')
+	}
+
+
+	setPSNVariables() {
+
+		let updateDefs = {}
+		if (this.decoder.system_name) {
+			//console.log(`System Name: ${this.decoder.system_name}`);
+			updateDefs['system_name'] = this.decoder.system_name;
+
+
+		}
+		if (Object.keys(this.decoder.trackers).length > 0) {
+			//console.log(`Tracker Count: ${Object.keys(this.decoder.trackers).length}`);
+			//console.debug(JSON.stringify(this.decoder.trackers, (_, v) => typeof v === 'bigint' ? v.toString() : v))
+			updateDefs[`system_tracker_count`] = Object.keys(this.decoder.trackers).length;
+
+			//Update Defs to Generate variables
+			this.howManyTrackers = Object.keys(this.decoder.trackers).length;
+			this.updateVariableDefinitions()
+		}
+
+
+		//console.debug(this.decoder.tracker)
+
+		Object.entries(this.decoder.trackers).forEach(([trackerId, tracker]) => {
+			if (tracker.tracker_name) {
+				//console.log(`Tracker - id: ${trackerId} | name: ${tracker.tracker_name.tracker_name}`);
+				updateDefs[`tracker_${trackerId}_name`] = tracker.tracker_name.tracker_name;
+			}
+
+			if (tracker.pos) {
+				//console.log(`\tpos: ${tracker.pos.x}, ${tracker.pos.y}, ${tracker.pos.z}`);
+				updateDefs[`tracker_${trackerId}_pos_x`] = tracker.pos.pos_x.toFixed(this.decimals);
+				updateDefs[`tracker_${trackerId}_pos_y`] = tracker.pos.pos_y.toFixed(this.decimals);
+				updateDefs[`tracker_${trackerId}_pos_z`] = tracker.pos.pos_z.toFixed(this.decimals);
+			}
+
+			if (tracker.speed) {
+				//console.log(`\tspeed: ${tracker.speed.x}, ${tracker.speed.y}, ${tracker.speed.z}`);
+				updateDefs[`tracker_${trackerId}_speed_x`] = tracker.speed.x.toFixed(this.decimals);
+				updateDefs[`tracker_${trackerId}_speed_y`] = tracker.speed.y.toFixed(this.decimals);
+				updateDefs[`tracker_${trackerId}_speed_z`] = tracker.speed.z.toFixed(this.decimals);
+			}
+
+			if (tracker.ori) {
+				//console.log(`\tori: ${tracker.ori.x}, ${tracker.ori.y}, ${tracker.ori.z}`);
+				updateDefs[`tracker_${trackerId}_ori_x`] = tracker.ori.x.toFixed(this.decimals);
+				updateDefs[`tracker_${trackerId}_ori_y`] = tracker.ori.y.toFixed(this.decimals);
+				updateDefs[`tracker_${trackerId}_ori_z`] = tracker.ori.z.toFixed(this.decimals);
+			}
+
+			if (tracker.status) {
+				//console.log(`\tstatus: ${tracker.status.validity}`);
+				updateDefs[`tracker_${trackerId}_status`] = tracker.status.validity;
+			}
+
+			if (tracker.accel) {
+				//console.log(`\taccel: ${tracker.accel.x}, ${tracker.accel.y}, ${tracker.accel.z}`);
+				updateDefs[`tracker_${trackerId}_accel_x`] = tracker.accel.x.toFixed(this.decimals);
+				updateDefs[`tracker_${trackerId}_accel_y`] = tracker.accel.y.toFixed(this.decimals);
+				updateDefs[`tracker_${trackerId}_accel_z`] = tracker.accel.z.toFixed(this.decimals);
+			}
+
+			if (tracker.trgtpos) {
+				//console.log(`\ttrgtpos: ${tracker.trgtpos.x}, ${tracker.trgtpos.y}, ${tracker.trgtpos.z}`);
+				updateDefs[`tracker_${trackerId}_trgtpos_x`] = tracker.trgtpos.x.toFixed(this.decimals);
+				updateDefs[`tracker_${trackerId}_trgtpos_y`] = tracker.trgtpos.y.toFixed(this.decimals);
+				updateDefs[`tracker_${trackerId}_trgtpos_z`] = tracker.trgtpos.z.toFixed(this.decimals);
+			}
+
+			if (tracker.timestamp) {
+				//If this field is not present, you can simply use the packet timestamp as a fallback.
+				//console.log(`\ttimestamp: ${tracker.timestamp.toString}`);
+				updateDefs[`tracker_${trackerId}_timestamp`] = tracker.timestamp.tracker_timestamp.toString();
+			} else{
+				//console.log(`\ttimestamp: ${tracker.timestamp.toString}`);
+				updateDefs[`tracker_${trackerId}_timestamp`] = this.decoder.lastDataPacketHeader.packet_timestamp.toString();
+			}
+			this.setInstanceStates(updateDefs, true)
+		});
+		//}, 1000);
 	}
 
 }

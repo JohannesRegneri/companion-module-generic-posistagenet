@@ -2,11 +2,11 @@
 	"id": "posistagenet",
 	"name": "PosiStageNet",
 	"shortname": "PSN",
-	"description": "Interface to the ETC EOS lighting system",
-	"version": "0.0.0",
+	"description": "Receive PosiStageNet-Data",
+	"version": "1.0.0",
 	"license": "MIT",
-	"repository": "git+https://github.com/bitfocus/companion-module-etc-eos.git",
-	"bugs": "https://github.com/bitfocus/companion-module-etc-eos/issues",
+	"repository": "git+https://github.com/bitfocus/companion-module-generic-posistagenet.git",
+	"bugs": "https://github.com/bitfocus/companion-module-generic-posistagenet/issues",
 	"maintainers": [
 		{
 			"name": "",
