@@ -116,6 +116,7 @@ class ModuleInstance extends InstanceBase {
 			this.client.on('message', (buffer) => {
 				this.decoder.decode(buffer);
 				//this.setPSNVariables();
+
 			});
 
 			this.client.bind(this.config.psnPort, '0.0.0.0');
@@ -156,11 +157,13 @@ class ModuleInstance extends InstanceBase {
 			//console.debug(JSON.stringify(this.decoder.trackers, (_, v) => typeof v === 'bigint' ? v.toString() : v))
 			this.trackers = Object.keys(this.decoder.trackers);
 			updateDefs[`system_tracker_count`] = this.trackers.length;
+			updateDefs[`system_tracker_ids`] = JSON.stringify(this.trackers);
 
 			this.updateVariableDefinitions()
 		}
 
 		//TODO:
+		//TODO Compare Trackerlist with existing Trackers and update new Variable List if ids and names change
 		//console.debug(this.decoder.trackers)
 
 		Object.entries(this.decoder.trackers).forEach(([trackerId, tracker]) => {
@@ -178,16 +181,16 @@ class ModuleInstance extends InstanceBase {
 
 			if (tracker.speed) {
 				//console.log(`\tspeed: ${tracker.speed.x}, ${tracker.speed.y}, ${tracker.speed.z}`);
-				updateDefs[`tracker_${trackerId}_speed_x`] = tracker.speed.x.toFixed(this.config.decimals);
-				updateDefs[`tracker_${trackerId}_speed_y`] = tracker.speed.y.toFixed(this.config.decimals);
-				updateDefs[`tracker_${trackerId}_speed_z`] = tracker.speed.z.toFixed(this.config.decimals);
+				updateDefs[`tracker_${trackerId}_speed_x`] = tracker.speed.speed_x.toFixed(this.config.decimals);
+				updateDefs[`tracker_${trackerId}_speed_y`] = tracker.speed.speed_y.toFixed(this.config.decimals);
+				updateDefs[`tracker_${trackerId}_speed_z`] = tracker.speed.speed_z.toFixed(this.config.decimals);
 			}
 
 			if (tracker.ori) {
 				//console.log(`\tori: ${tracker.ori.x}, ${tracker.ori.y}, ${tracker.ori.z}`);
-				updateDefs[`tracker_${trackerId}_ori_x`] = tracker.ori.x.toFixed(this.config.decimals);
-				updateDefs[`tracker_${trackerId}_ori_y`] = tracker.ori.y.toFixed(this.config.decimals);
-				updateDefs[`tracker_${trackerId}_ori_z`] = tracker.ori.z.toFixed(this.config.decimals);
+				updateDefs[`tracker_${trackerId}_ori_x`] = tracker.ori.ori_x.toFixed(this.config.decimals);
+				updateDefs[`tracker_${trackerId}_ori_y`] = tracker.ori.ori_y.toFixed(this.config.decimals);
+				updateDefs[`tracker_${trackerId}_ori_z`] = tracker.ori.ori_z.toFixed(this.config.decimals);
 			}
 
 			if (tracker.status) {
@@ -197,16 +200,16 @@ class ModuleInstance extends InstanceBase {
 
 			if (tracker.accel) {
 				//console.log(`\taccel: ${tracker.accel.x}, ${tracker.accel.y}, ${tracker.accel.z}`);
-				updateDefs[`tracker_${trackerId}_accel_x`] = tracker.accel.x.toFixed(this.config.decimals);
-				updateDefs[`tracker_${trackerId}_accel_y`] = tracker.accel.y.toFixed(this.config.decimals);
-				updateDefs[`tracker_${trackerId}_accel_z`] = tracker.accel.z.toFixed(this.config.decimals);
+				updateDefs[`tracker_${trackerId}_accel_x`] = tracker.accel.accel_x.toFixed(this.config.decimals);
+				updateDefs[`tracker_${trackerId}_accel_y`] = tracker.accel.accel_y.toFixed(this.config.decimals);
+				updateDefs[`tracker_${trackerId}_accel_z`] = tracker.accel.accel_z.toFixed(this.config.decimals);
 			}
 
 			if (tracker.trgtpos) {
 				//console.log(`\ttrgtpos: ${tracker.trgtpos.x}, ${tracker.trgtpos.y}, ${tracker.trgtpos.z}`);
-				updateDefs[`tracker_${trackerId}_trgtpos_x`] = tracker.trgtpos.x.toFixed(this.config.decimals);
-				updateDefs[`tracker_${trackerId}_trgtpos_y`] = tracker.trgtpos.y.toFixed(this.config.decimals);
-				updateDefs[`tracker_${trackerId}_trgtpos_z`] = tracker.trgtpos.z.toFixed(this.config.decimals);
+				updateDefs[`tracker_${trackerId}_trgtpos_x`] = tracker.trgtpos.trgtpos_x.toFixed(this.config.decimals);
+				updateDefs[`tracker_${trackerId}_trgtpos_y`] = tracker.trgtpos.trgtpos_y.toFixed(this.config.decimals);
+				updateDefs[`tracker_${trackerId}_trgtpos_z`] = tracker.trgtpos.trgtpos_z.toFixed(this.config.decimals);
 			}
 
 			if (tracker.timestamp) {

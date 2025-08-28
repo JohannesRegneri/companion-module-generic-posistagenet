@@ -50,13 +50,21 @@ function getConfigFields(id) {
 			required: true,
 		},
 		{
+			type: 'checkbox',
+			id: 'custom_trackers',
+			label: 'Only show specific Tracker IDs',
+			default: false,
+			required: true,
+		},
+		{
 			type: 'textinput',
 			id: 'variables',
 			label: `Tracker IDs:`,
-			tooltip: `Show specific tracker or tracker range (e.g. "0-5,34,100-130")`,
+			tooltip: `Show specific tracker or tracker range ("-1"=all trackers)(e.g. "0-5,34,100-130")`,
 			width: 8,
 			default: '0-100',
 			regex: '/^(([0-9]+(-[0-9]+){0,1}),{0,1}){1,}$/',
+			isVisible: (options) => options.custom_trackers === true,
 		},
 
 		/* //TODO

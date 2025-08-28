@@ -1,8 +1,14 @@
 const ParseVariableConfig = function (self) {
 	self.variable_status = []
-	for (let i = 0; i < self.trackers.length; i++) {
-		self.variable_status[i] = false
-	}
+
+	
+	
+	Object.entries(self.trackers).forEach(([_, i]) => {
+		// -1 show all avaliable Trackers true/false
+		self.variable_status[i] = !self.config.custom_trackers;
+		//(self.config.variables == -1)
+	})
+	
 
 	if (!self.config.variables) {
 		// no variables to enable
@@ -29,11 +35,12 @@ const GetVariableDefinitions = function (self) {
 
 	let variableDefinitions = [
 		{ variableId: 'system_name', name: 'The name of the PSN server' },
-		{ variableId: 'system_tracker_count', name: 'The number of trackers' },
+		{ variableId: 'system_tracker_count', name: 'The number of available trackers' },
+		{ variableId: 'system_tracker_ids', name: 'List of available tracker ids' },
 	];
 
 
-	for (let i = 0; i < self.trackers.length; i++) {
+	Object.entries(self.trackers).forEach(([_, i]) => {
 		if (self.variable_status[i]) {
 			variableDefinitions.push(
 				{ variableId: `tracker_${i}_name`, name: `Tracker-${i}: Name` },
@@ -64,6 +71,7 @@ const GetVariableDefinitions = function (self) {
 			);
 		}
 	}
+	)
 	return variableDefinitions;
 }
 

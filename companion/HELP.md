@@ -12,6 +12,7 @@ port **56565**. These are the defaults parameters and can be modified on the tra
 - System:
   - system_name
   - system_tracker_count
+  - system_tracker_ids
 - Tracker (id is the identifier):
   - General:
     - tracker_id_name
