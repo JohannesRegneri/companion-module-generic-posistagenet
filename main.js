@@ -6,8 +6,10 @@ const { getConfigFields } = require('./config.js')
 const UpgradeScripts = require('./upgrades')
 const UpdateActions = require('./actions')
 const UpdateFeedbacks = require('./feedbacks')
-const constants = require('./constants')
 const { GetVariableDefinitions, UpdateVariableDefinitions } = require('./variables')
+const UpdatePresetDefinitions = require('./presets')
+const constants = require('./constants')
+
 
 
 
@@ -64,7 +66,7 @@ class ModuleInstance extends InstanceBase {
 	}
 
 	updatePresets() {
-
+		UpdatePresetDefinitions(this)
 	}
 
 	setInstanceStates(values, isVariable) {
