@@ -1,8 +1,44 @@
 # PosiStageNet
 
-[https://posistage.net/](https://posistage.net/)
+Link: [https://posistage.net/](https://posistage.net/)
 
-## General
+
+## Settings
+
+The PosiStageNet protocol is transmitted as **UDP multicast** at address **236.10.10.10** over the
+port **56565**. These are the defaults parameters and can be modified on the tracking server. 
+
+## Variables
+- System:
+  - system_name
+  - system_tracker_count
+- Tracker (id is the identifier):
+  - General:
+    - tracker_id_name
+    - tracker_id_timestamp
+    - tracker_id_status 
+  - Position:
+    - tracker_id_pos_x
+    - tracker_id_pos_y
+    - tracker_id_pos_z
+  - Speed:
+    - tracker_id_speed_x
+    - tracker_id_speed_y
+    - tracker_id_speed_z
+  - Orientation:
+    - tracker_id_ori_x`
+    - tracker_id_ori_y`
+    - tracker_id_ori_z`
+  - Acceleration:
+    - tracker_id_accel_x
+    - tracker_id_accel_y
+    - tracker_id_accel_z
+  - Targetpositon:
+    - tracker_id_trgtpos_x
+    - tracker_id_trgtpos_y
+    - tracker_id_trgtpos_z
+
+## Information
 The PosiStageNet sends tracking information as calculated by a positioning system; it defines 2
 types of packets to transmit tracking information, the **PSN_DATA** packet and the **PSN_INFO**
 packet. 
@@ -14,52 +50,3 @@ writing).
 
 **PSN_INFO** packet is transmitted at a slower rate as it is not supposed to change
 as often as positioning information. The default rate of 1Hz is used for **PSN_INFO** packets.
-
-## Communication
-
-The PosiStageNet protocol is transmitted as **UDP multicast** at address **236.10.10.10** over the
-port **56565**. These are the defaults parameters and can be modified on the tracking server. 
-
-## Module-Settings
-
-## Variables
-
-- PSN_INFO_SYSTEM_NAME
-  - packet_timestamp uint64
-  - version_high uint8
-  - version_low uint8
-  - frame_id uint8
-  - frame_packet_count uint8
-
-- PSN_INFO_TRACKER_LIST
-
-- PSN_DATA_TRACKER_POS
-  - pos_x float
-  - pos_y float
-  - pos_z float
-
-- PSN_DATA_TRACKER_SPEED
-  - speed_x float
-  - speed_y float
-  - speed_z float
-
-- PSN_DATA_TRACKER_ORI
-  - ori_x float
-  - ori_y float
-  - ori_z float
-
-- PSN_DATA_TRACKER_STATUS
-  - validity float
-
-- PSN_DATA_TRACKER_ACCEL
-  - accel_x float
-  - accel_y float
-  - accel_z float
-
-- PSN_DATA_TRACKER_TRGTPOS
-  - trgtpos_x float
-  - trgtpos_y float
-  - trgtpos_z float
-
-- PSN_DATA_TRACKER_TIMESTAMP
-  - tracker_timestamp uint64

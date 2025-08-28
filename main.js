@@ -35,7 +35,10 @@ class ModuleInstance extends InstanceBase {
 
 	async configUpdated(config) {
 		this.config = config
+
+		//main 
 		this.initPSN()
+		this.listenPSN(1000 / this.config.refreshRate)
 	}
 
 	async destroy() {
@@ -64,23 +67,6 @@ class ModuleInstance extends InstanceBase {
 
 	}
 
-	/**
-	 * Sets the connection state of this module
-	 *
-	 * @param isConnected
-	 */
-	setConnectionState(isConnected) {
-		let currentState = this.instanceState['connected'];
-
-		this.updateStatus(isConnected ? InstanceStatus.Ok : InstanceStatus.Disconnected);
-		this.setInstanceStates({ connected: isConnected });
-
-		if (currentState !== isConnected) {
-			// The connection state changed. Update the feedback.
-			this.checkFeedbacks('connected');
-		}
-	}
-
 	setInstanceStates(values, isVariable) {
 		for (const [key, value] of Object.entries(values)) {
 			this.instanceState[key] = value;
@@ -91,67 +77,80 @@ class ModuleInstance extends InstanceBase {
 		}
 	}
 
-	requestFullState() {
-		this.emptyState();
-	}
-
-	emptyState() {
-		// Empty the state, but preserve the connected state.
-		this.instanceState = {
-			connected: this.instanceState['connected'],
-		};
-		//this.checkFeedbacks('macroisfired','pending_cue', 'active_cue', 'connected')
-	}
-
-
 	terminate() {
 		clearInterval(this.timer)
 		delete this.timer;
+		if (this.client) {
+			this.client.close((error) => {
+				if (error) {
+					console.error('Error closing socket:', error);
+				} 
+			});
+		}
+
 
 		delete this.trackers;
 		delete this.client;
 	}
 
+	/**
+	 * Init PSN
+	 *
+	 */
 	initPSN() {
+		//reset
 		this.terminate()
-		this.log('debug', `(initPSN with: ${JSON.stringify(this.config)}`);
+		this.log('debug', `initPSN with: ${JSON.stringify(this.config)}`);
 
 		if (this.config.psnHost) {
-
-
+			// create Socket
 			this.client = dgram.createSocket('udp4');
+
+			// create new PSN Package Decoder
 			this.decoder = new Decoder();
 
 			this.client.on('listening', () => {
 				this.client.addMembership(this.config.psnHost);
 			});
+
 			this.client.on('message', (buffer) => {
 				this.decoder.decode(buffer);
 				//this.setPSNVariables();
 			});
-			this.client.bind(this.config.psnPort, '0.0.0.0');
 
+			this.client.bind(this.config.psnPort, '0.0.0.0');
+			// init done
 			this.updateStatus(InstanceStatus.Ok);
 
-			this.timer = setInterval(() => {
-				this.setPSNVariables();
-			}, (1000 / this.config.refreshRate));
-
-			this.updateStatus(InstanceStatus.Ok)
 		} else {
 			this.updateStatus(InstanceStatus.BadConfig, 'something is missing')
 		}
 	}
 
-	setPSNVariables() {
+	/**
+	 * Refreshes the variables
+	 *
+	 * @param looptime
+	 */
+	listenPSN(looptime) {
+		looptime = looptime.toFixed(0);
+		this.log('debug', `listenPSN with: ${looptime}ms refreshtime`);
+		this.timer = setInterval(() => {
+			this.setPSNVariables();
+		}, (looptime));
+	}
 
+	/**
+	 * Set Variables
+	 *
+	 */
+	setPSNVariables() {
 		let updateDefs = {}
 		if (this.decoder.system_name) {
 			//console.log(`System Name: ${this.decoder.system_name}`);
 			updateDefs['system_name'] = this.decoder.system_name;
-
-
 		}
+
 		if (Object.keys(this.decoder.trackers).length > 0) {
 			//console.log(`Tracker Count: ${Object.keys(this.decoder.trackers).length}`);
 			//console.debug(JSON.stringify(this.decoder.trackers, (_, v) => typeof v === 'bigint' ? v.toString() : v))
@@ -161,8 +160,8 @@ class ModuleInstance extends InstanceBase {
 			this.updateVariableDefinitions()
 		}
 
-
-		//console.debug(this.decoder.tracker)
+		//TODO:
+		//console.debug(this.decoder.trackers)
 
 		Object.entries(this.decoder.trackers).forEach(([trackerId, tracker]) => {
 			if (tracker.tracker_name) {
@@ -220,9 +219,7 @@ class ModuleInstance extends InstanceBase {
 			}
 			this.setInstanceStates(updateDefs, true)
 		});
-
 	}
-
 }
 
 runEntrypoint(ModuleInstance, UpgradeScripts)

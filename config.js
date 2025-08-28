@@ -8,8 +8,7 @@ function getConfigFields(id) {
 			id: 'info',
 			width: 12,
 			label: 'Information',
-			value:
-				'This module will connect to a PosiStageNet (PSN) tracking server.',
+			value: 'This module will connect to a PosiStageNet (PSN) tracking server.',
 		},
 		{
 			type: 'textinput',
@@ -29,14 +28,13 @@ function getConfigFields(id) {
 			max: 65535,
 			required: true,
 		},
-
 		{
 			type: 'number',
 			id: 'refreshRate',
 			label: 'Refreshrate (Hz):',
 			default: PSN_SPEED,
 			width: 4,
-			min: 1,
+			min: 0.1,
 			max: 60,
 			required: true,
 		},
@@ -44,23 +42,24 @@ function getConfigFields(id) {
 			type: 'number',
 			id: 'decimals',
 			label: 'Decimals:',
+			tooltip: 'The number of decimal places in the variables',
 			default: 2,
 			min: 0,
 			max: 4,
 			width: 4,
-
 			required: true,
 		},
 		{
 			type: 'textinput',
 			id: 'variables',
-			label: `Show specific tracker or tracker range (e.g. "1-5,34,100-130")`,
-			width: 12,
+			label: `Tracker IDs:`,
+			tooltip: `Show specific tracker or tracker range (e.g. "0-5,34,100-130")`,
+			width: 8,
 			default: '0-100',
 			regex: '/^(([0-9]+(-[0-9]+){0,1}),{0,1}){1,}$/',
 		},
 
-		/*
+		/* //TODO
 		{
 			type: 'checkbox',
 			id: 'use_pos',
