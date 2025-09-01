@@ -3,7 +3,7 @@
 	"name": "PosiStageNet",
 	"shortname": "PSN",
 	"description": "Receive PosiStageNet-Data",
-	"version": "1.0.0",
+	"version": "0.1.0",
 	"license": "MIT",
 	"repository": "git+https://github.com/bitfocus/companion-module-generic-posistagenet.git",
 	"bugs": "https://github.com/bitfocus/companion-module-generic-posistagenet/issues",
